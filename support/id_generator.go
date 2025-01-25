@@ -9,8 +9,20 @@ import (
 )
 
 type IdGenerator struct {
-	Id              uint64
+	Incrementer     IncrementerInterface
 	SuffixMaxLength uint64
+}
+
+type DefaultIncrementer struct {
+	Id uint64
+}
+
+func (d *DefaultIncrementer) Incr() (uint64, error) {
+	return atomic.AddUint64(&d.Id, 1), nil
+}
+
+type IncrementerInterface interface {
+	Incr() (uint64, error)
 }
 
 type IdGeneratorInterface interface {
@@ -18,23 +30,26 @@ type IdGeneratorInterface interface {
 }
 
 func NewIdGenerator() *IdGenerator {
-	return &IdGenerator{0, 4}
+	return &IdGenerator{&DefaultIncrementer{Id: 0}, 4}
 }
 
 func (g *IdGenerator) Generate() (uint64, error) {
-	result := fmt.Sprintf("%d%s", time.Now().Unix(), g.Suffix())
+	id, err := g.Incrementer.Incr()
+	if err != nil {
+		return 0, err
+	}
+
+	result := fmt.Sprintf("%d%s", time.Now().Unix(), g.Suffix(id))
 	return strconv.ParseUint(result, 10, 64)
 }
 
-func (g *IdGenerator) Suffix() string {
+func (g *IdGenerator) Suffix(id uint64) string {
 	maxValue := 10
 	exp := g.SuffixMaxLength - 1
 	for exp > 0 {
 		maxValue *= 10
 		exp--
 	}
-
-	id := atomic.AddUint64(&g.Id, 1)
 
 	return go_stringable.StrPadLeft(strconv.FormatUint(id%uint64(maxValue), 10), '0', 4)
 }

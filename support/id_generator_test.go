@@ -10,7 +10,7 @@ func TestIdGenerator_Generate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint64(1), id%10)
 
-	ig := &IdGenerator{9999, 4}
+	ig := &IdGenerator{&DefaultIncrementer{Id: 9999}, 4}
 	id, _ = ig.Generate()
 	assert.Equal(t, uint64(0), id%10000)
 
