@@ -48,6 +48,10 @@ func NewIdGenerator() *IdGenerator {
 	return &IdGenerator{&DefaultIncrementer{Id: 0}, 4}
 }
 
+func NewRedisIdGenerator(rds *redis.Redis, key string) *IdGenerator {
+	return &IdGenerator{&RedisIncrementer{Rds: rds, Key: key}, 4}
+}
+
 func (g *IdGenerator) Generate() (uint64, error) {
 	id, err := g.Incrementer.Incr()
 	if err != nil {
