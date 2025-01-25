@@ -3,6 +3,7 @@ package support
 import (
 	"fmt"
 	go_stringable "github.com/hyperf/go-stringable"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -19,6 +20,20 @@ type DefaultIncrementer struct {
 
 func (d *DefaultIncrementer) Incr() (uint64, error) {
 	return atomic.AddUint64(&d.Id, 1), nil
+}
+
+type RedisIncrementer struct {
+	Rds *redis.Redis
+	Key string
+}
+
+func (r *RedisIncrementer) Incr() (uint64, error) {
+	res, err := r.Rds.Incr(r.Key)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(res), nil
 }
 
 type IncrementerInterface interface {
