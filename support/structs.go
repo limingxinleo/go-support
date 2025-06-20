@@ -27,7 +27,6 @@ func (s *StructSupport) Fill(in any, data map[string]string, tagName string) err
 
 	typ := v.Type()
 	for i := 0; i < v.NumField(); i++ {
-		// gets us a StructField
 		fi := typ.Field(i)
 		tagv := fi.Tag.Get(tagName)
 		if strings.Contains(tagv, ",") {
